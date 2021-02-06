@@ -1,26 +1,58 @@
 #include "dictlib.h"
 
-Node *new_item(char *item){
-    Node *newp;
+int flag;
 
-    newp = (Node *)malloc(sizeof(Node));
-    if(newp == NULL){
-        fprintf(stderr, "new_item: error en malloc\n");
-        exit(1);
+//*
+void free_word(Trie *listp){
+	Node *next;
+
+	for(; listp->sinonimos != NULL; listp->sinonimos = next){
+		next = listp->sinonimos->next;
+		free(listp->sinonimos);
+	}
+    for(; listp->antonimos != NULL; listp->antonimos = next){
+        next = listp->antonimos->next;
+        free(listp->antonimos);
     }
-    strcpy(newp->item, item);
-    newp->next = NULL;
-    return newp;
+    listp->sinonimos = NULL;
+    listp->antonimos = NULL;
 }
 
+void printList(Trie *listp){
+	printf("--> ");
+	for(; listp->sinonimos != NULL; listp->sinonimos = listp->sinonimos->next)
+		printf("%s --> ", listp->sinonimos->item);
+	printf("NULL\n");
+}
+
+//*
+Node *add_front(Node *listp, Node *newp){
+	newp->next = listp;
+	return newp;
+}
+
+//*
+Node *new_item(char *item){
+	Node *newp;
+
+	newp = (Node *)malloc(sizeof(Node));
+	if(newp == NULL){
+		fprintf(stderr, "new_item: error en malloc\n");
+		exit(1);
+	}
+	strcpy(newp->item, item);
+	newp->next = NULL;
+	return newp;
+}
+
+//*
 Trie *getNode(void){
+    Trie *pNode = NULL;
 	int i;
-	Trie *pNode = NULL;
 
 	pNode = (Trie *)malloc(sizeof(Trie));
 	if(pNode){
 		pNode->hoja = 0;
-        strcpy(pNode->clave, "\0");
 		for (i = 0; i < 26; i++)
 			pNode->hijos[i] = NULL;
 	}
@@ -31,27 +63,26 @@ Trie *getNode(void){
 	return pNode;
 }
 
+//*
 void insert(Trie *root, const char *key){
+    Trie *pCrawl = root;
 	int level, length = strlen(key), index;
-	Trie *pCrawl = root;
-	//Node *listSin = NULL, *listAnt = NULL;
 
 	for (level = 0; level < length; level++){
 		index = CharToIndex(key[level]);
-		strncpy(pCrawl->clave, key, level);
 		pCrawl->sinonimos = NULL;
 		pCrawl->antonimos = NULL;
 		if (!(pCrawl->hijos[index]))
 			pCrawl->hijos[index] = getNode();
 		pCrawl = pCrawl->hijos[index];
 	}
-	strcpy(pCrawl->clave, key);
 	pCrawl->hoja = 1;
 }
 
+//*
 int search(Trie *root, const char *key){
+    Trie *pCrawl = root;
 	int level, length = strlen(key), index;
-	Trie *pCrawl = root;
 
 	for(level = 0; level < length; level++){
 		index = CharToIndex(key[level]);
@@ -62,10 +93,43 @@ int search(Trie *root, const char *key){
 	return ((pCrawl != NULL) && (pCrawl->hoja));
 }
 
+
+Trie *searchNode(Trie *root, const char *key){
+    Trie *pCrawl = root;
+	int level, length = strlen(key), index;
+
+	for(level = 0; level < length; level++){
+		index = CharToIndex(key[level]);
+		if (!(pCrawl->hijos[index]))
+			return NULL;
+		pCrawl = pCrawl->hijos[index];
+	}
+	return pCrawl;
+}
+
+
+void addList(Trie *root, char *w1, char *w2, int modo){
+    Trie *listp;
+
+    if(modo){       //  Lista de Sinonimos
+        listp = searchNode(root, w1);
+        listp->sinonimos = add_front(listp->sinonimos, new_item(w2));
+        listp = searchNode(root, w2);
+        listp->sinonimos = add_front(listp->sinonimos, new_item(w1));
+    }
+    else{           //  Lista de Antonimos
+        listp = searchNode(root, w1);
+        listp->antonimos = add_front(listp->antonimos, new_item(w2));
+        listp = searchNode(root, w2);
+        listp->antonimos = add_front(listp->antonimos, new_item(w1));
+    }
+}
+
+
 void cargarTrie(Trie *root, char *name){
-	char word[32];
-	int sin, ant;
 	FILE *arch;
+    char word[32], aux[32];
+	int modo;
 
 	//	Verifica el archivo que cargara si este no existe aborta.
 	if((arch = fopen(name, "r")) == NULL){
@@ -74,29 +138,26 @@ void cargarTrie(Trie *root, char *name){
 	}
 	/***********************************************************/
 	
-	sin = ant = 0;
+    flag = 0;
 	while(!feof(arch)){
 		fscanf(arch, "%s", word);
-
 		if(!(strcmp(word, "S"))){	//	Condicional de Prefijo "S"
-			sin = 1;
+			modo = 1;
 			continue;
 		}
 		else
 			if(!(strcmp(word, "A"))){	//	Condicional de Prefijo "A"
-				ant = 1;
+				modo = 0;
 				continue;
 			}
 		insert(root, word);
-		if(sin == 1){
-			//printf("xd\n");
-			sin = 0;
-		}
-		else
-			if(ant == 1){
-				//printf("dx\n");
-				ant = 0;
-			}
+        if(!flag){
+            strcpy(aux, word);
+            flag++;
+            continue;
+        }
+        addList(root, word, aux, modo);
+        flag = 0;
 	}
 	fclose(arch);
 }
@@ -123,6 +184,7 @@ void cargarTrie(Trie *root, char *name){
 	}
 }//*/
 
+
 void cmdCargar(char *name){
 	FILE *arch = NULL;
 
@@ -131,18 +193,16 @@ void cmdCargar(char *name){
 	fclose(arch);
 }
 
-void cmdSinonimo();
-
-void cmdAntonimo();
+void cmdPalabra();
 
 void cmdExpresion();
 
 void cmdAyuda(void){
 	printf("Comandos Disponibles\n\n ");
 	printf("> cargar + [Nombre]   -- Asigna el archivo que se estara usando para futuras ejecuciones\n ");
-	printf("> s + [Palabra]       -- Enlista los sinonimos de la palabra ingresada\n ");
-	printf("> a + [Palabra]       -- Enlista los antonimos de la palabra ingresada\n ");
-	printf("> e + [Expresion]     -- Enlista los sinonimos y antonimos de las palabras que componen la expresion\n ");
-	printf("> ayuda               -- Muestra los comandos disponibles\n ");
-	printf("> x                   -- Finaliza la ejecucion del programa (Solo para Modo Iterativo)\n");
+	printf("> s + [Palabra]	   -- Enlista los sinonimos de la palabra ingresada\n ");
+	printf("> a + [Palabra]	   -- Enlista los antonimos de la palabra ingresada\n ");
+	printf("> e + [Expresion]	 -- Enlista los sinonimos y antonimos de las palabras que componen la expresion\n ");
+	printf("> ayuda			   -- Muestra los comandos disponibles\n ");
+	printf("> x				   -- Finaliza la ejecucion del programa (Solo para Modo Iterativo)\n");
 }

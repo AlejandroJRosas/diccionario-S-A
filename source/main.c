@@ -1,8 +1,8 @@
 #include "dictlib.h"
 
 int main(int argc, char *argv[]){
-	Trie *root = getNode();
 	FILE *arch = NULL;
+	Trie *root = getNode();
 	char word[32];
 
 	//	Modo Comando
@@ -31,5 +31,6 @@ int main(int argc, char *argv[]){
 	fscanf(arch, "%s", word);
 	fclose(arch);
 	cargarTrie(root, word);
+	printList(searchNode(root, "Hombre"));
 	return 0;
 }
