@@ -18,17 +18,34 @@ void free_word(Trie *listp){
     listp->antonimos = NULL;
 }
 
-void printList(Trie *listp){
+//*
+void printList(Trie *listp, int modo){
 	printf("--> ");
-	for(; listp->sinonimos != NULL; listp->sinonimos = listp->sinonimos->next)
-		printf("%s --> ", listp->sinonimos->item);
-	printf("NULL\n");
+    if(modo){
+        Node *pNode = listp->sinonimos;
+	    for(; pNode != NULL; pNode = pNode->next)
+		    printf("%s --> ", pNode->item);
+	    printf("NULL\n");
+    }
+    else{
+        Node *pNode = listp->antonimos;
+        for(; pNode != NULL; pNode = pNode->next)
+		    printf("%s --> ", pNode->item);
+	    printf("NULL\n");
+    }
 }
 
 //*
-Node *add_front(Node *listp, Node *newp){
-	newp->next = listp;
-	return newp;
+Node *insertList(Node *listp, Node *newp){
+    Node *p, *prev = NULL;
+
+    for(p = listp; p != NULL && (strcmp(p->item, newp->item) < 0); p = p->next)
+        prev = p;
+    newp->next = p;
+    if(prev == NULL)
+        return newp;
+    prev->next = newp;
+    return listp;
 }
 
 //*
@@ -64,68 +81,68 @@ Trie *getNode(void){
 }
 
 //*
-void insert(Trie *root, const char *key){
-    Trie *pCrawl = root;
+void insertTrie(Trie *root, const char *key){
+    Trie *pTrie = root;
 	int level, length = strlen(key), index;
 
 	for (level = 0; level < length; level++){
 		index = CharToIndex(key[level]);
-		pCrawl->sinonimos = NULL;
-		pCrawl->antonimos = NULL;
-		if (!(pCrawl->hijos[index]))
-			pCrawl->hijos[index] = getNode();
-		pCrawl = pCrawl->hijos[index];
+		pTrie->sinonimos = NULL;
+		pTrie->antonimos = NULL;
+		if (!(pTrie->hijos[index]))
+			pTrie->hijos[index] = getNode();
+		pTrie = pTrie->hijos[index];
 	}
-	pCrawl->hoja = 1;
+	pTrie->hoja = 1;
 }
 
 //*
 int search(Trie *root, const char *key){
-    Trie *pCrawl = root;
+    Trie *pTrie = root;
 	int level, length = strlen(key), index;
 
 	for(level = 0; level < length; level++){
 		index = CharToIndex(key[level]);
-		if (!(pCrawl->hijos[index]))
+		if (!(pTrie->hijos[index]))
 			return 0;
-		pCrawl = pCrawl->hijos[index];
+		pTrie = pTrie->hijos[index];
 	}
-	return ((pCrawl != NULL) && (pCrawl->hoja));
+	return ((pTrie != NULL) && (pTrie->hoja));
 }
 
-
+//*
 Trie *searchNode(Trie *root, const char *key){
-    Trie *pCrawl = root;
+    Trie *pTrie = root;
 	int level, length = strlen(key), index;
 
 	for(level = 0; level < length; level++){
 		index = CharToIndex(key[level]);
-		if (!(pCrawl->hijos[index]))
+		if (!(pTrie->hijos[index]))
 			return NULL;
-		pCrawl = pCrawl->hijos[index];
+		pTrie = pTrie->hijos[index];
 	}
-	return pCrawl;
+	return pTrie;
 }
 
-
+//*
 void addList(Trie *root, char *w1, char *w2, int modo){
     Trie *listp;
 
     if(modo){       //  Lista de Sinonimos
         listp = searchNode(root, w1);
-        listp->sinonimos = add_front(listp->sinonimos, new_item(w2));
+        listp->sinonimos = insertList(listp->sinonimos, new_item(w2));
         listp = searchNode(root, w2);
-        listp->sinonimos = add_front(listp->sinonimos, new_item(w1));
+        listp->sinonimos = insertList(listp->sinonimos, new_item(w1));
     }
     else{           //  Lista de Antonimos
         listp = searchNode(root, w1);
-        listp->antonimos = add_front(listp->antonimos, new_item(w2));
+        listp->antonimos = insertList(listp->antonimos, new_item(w2));
         listp = searchNode(root, w2);
-        listp->antonimos = add_front(listp->antonimos, new_item(w1));
+        listp->antonimos = insertList(listp->antonimos, new_item(w1));
     }
 }
 
-
+//*
 void cargarTrie(Trie *root, char *name){
 	FILE *arch;
     char word[32], aux[32];
@@ -150,7 +167,7 @@ void cargarTrie(Trie *root, char *name){
 				modo = 0;
 				continue;
 			}
-		insert(root, word);
+		insertTrie(root, word);
         if(!flag){
             strcpy(aux, word);
             flag++;
@@ -184,13 +201,27 @@ void cargarTrie(Trie *root, char *name){
 	}
 }//*/
 
-
-void cmdCargar(char *name){
+//*
+int cmdCargar(char *name){
 	FILE *arch = NULL;
+    char word[32];
 
-	arch = fopen("loaded.txt", "w");
-	fputs(name, arch);
+    if((arch = fopen("loaded.txt", "r+")) == NULL){
+	    arch = fopen("loaded.txt", "w+");
+	    fputs(name, arch);
+    }
+    else{
+        arch = fopen("loaded.txt", "r+");
+        while(!feof(arch)){
+		    fscanf(arch, "%s", word);
+            if(!strcmp(word, name))
+                return 0;
+        }
+        fputs("\n", arch);
+        fputs(name, arch);
+    }
 	fclose(arch);
+    return 0;
 }
 
 void cmdPalabra();
@@ -199,10 +230,12 @@ void cmdExpresion();
 
 void cmdAyuda(void){
 	printf("Comandos Disponibles\n\n ");
-	printf("> cargar + [Nombre]   -- Asigna el archivo que se estara usando para futuras ejecuciones\n ");
-	printf("> s + [Palabra]	   -- Enlista los sinonimos de la palabra ingresada\n ");
-	printf("> a + [Palabra]	   -- Enlista los antonimos de la palabra ingresada\n ");
-	printf("> e + [Expresion]	 -- Enlista los sinonimos y antonimos de las palabras que componen la expresion\n ");
-	printf("> ayuda			   -- Muestra los comandos disponibles\n ");
-	printf("> x				   -- Finaliza la ejecucion del programa (Solo para Modo Iterativo)\n");
+	printf("> cargar + [Nombre]   -- Asigna los archivos que deseas abrir con el modo comando o carga archivo en modo iterativo\n ");
+	printf("> limpiar             -- Renueva la memoria del comando cargar\n ");
+    printf("> s + [Palabra]       -- Enlista los sinonimos de la palabra ingresada\n ");
+	printf("> a + [Palabra]       -- Enlista los antonimos de la palabra ingresada\n ");
+	printf("> e + [Expresion]     -- Enlista los sinonimos y antonimos de las palabras que componen la expresion\n ");
+	printf("> carch               -- Carga los archivos que abririas normalmente en modo comando (Solo en Modo Iterativo)\n ");
+    printf("> ayuda               -- Muestra los comandos disponibles\n ");
+	printf("> x                   -- Finaliza la ejecucion del programa (Solo para Modo Iterativo)\n");
 }

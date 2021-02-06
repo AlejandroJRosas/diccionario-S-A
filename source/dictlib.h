@@ -22,10 +22,10 @@ typedef struct TrieNode{
 void free_word(Trie *listp);
 
 //	Muestra los elementos en listp.
-void printList(Trie *listp);
+void printList(Trie *listp, int modo);
 
-//	Añade newp al frente de listp y retorna la nueva lista.
-Node *add_front(Node *listp, Node *newp);
+//  Inserta newp ordenado alfabeticamente en listp y retorna la nueva lista.
+Node *insertList(Node *listp, Node *newp);
 
 //	Crea un nuevo elemento con el item ingresado.
 Node *new_item(char *item);
@@ -39,7 +39,7 @@ Node *new_item(char *item);
 Trie *getNode(void);
 
 //	Inserta una palabra en el Trie
-void insert(Trie *root, const char *key);
+void insertTrie(Trie *root, const char *key);
 
 //	Busca una palabra en el Trie retornando 1 si la encuentra o 0 en caso contrario.
 int search(Trie *root, const char *key);
@@ -62,7 +62,7 @@ void cargarTrie(Trie *root, char *name);
 /*					Comandos					*/
 
 //	Asigna el archivo a cargar al Trie para futuras ejecuciones.
-void cmdCargar(char *name);
+int cmdCargar(char *name);
 
 void cmdPalabra();
 
