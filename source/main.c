@@ -5,14 +5,18 @@ int main(int argc, char *argv[]){
 	Trie *root = getNode();
 	size_t bytesLongitud;
 	ssize_t bytesLeidos;
-	char *cadena, arg[8][32], word[32];
+	char *cadena, arg[8][24], word[24];
 	int i, cont, cc;
 
 	//	Modo Comando
 	if(argc > 1){
 		if(!(strcmp(argv[1], "cargar"))){	//	cmdCargar
-			for(i = 2; i < argc; i++)
-				cmdCargar(argv[i]);
+			for(i = 2; i < argc; i++){
+				if(cargarTrie(root, argv[i])){
+					cmdCargar(argv[i]);
+					printf("Carga de -%s- exitosa!\n", argv[i]);
+				}
+			}
 			exit(1);
 		}
 		else{
@@ -40,16 +44,38 @@ int main(int argc, char *argv[]){
 						}
 						if(!strcmp(argv[1], "s")){
 							cmdPalabra(root, argv[2], 1);
+							search(root, argv[2]);
 							exit(1);
 						}
 						else{
 							cmdPalabra(root, argv[2], 0);
+							search(root, argv[2]);
 							exit(1);
 						}
 					}
-					else{	//	Comando Erroneo
-						printf("Error comando -%s- no encontrado\n", argv[1]);
-						exit(1);
+					else{	
+						if(!strcmp(argv[1], "e")){	//	cmdExpresion
+							if((arch = fopen("loaded.txt", "r")) == NULL){
+								printf("Es necesario asignar el archivo a cargar ");
+								printf("por medio del comando cargar + nombre\n");
+							}
+							else{
+								while(!feof(arch)){
+									fscanf(arch, "%s", word);
+									cargarTrie(root, word);
+								}
+								fclose(arch);
+							}
+							for(i = 2; i < argc; i++){
+								cmdPalabra(root, argv[i], 1);
+								cmdPalabra(root, argv[i], 0);
+							}
+							exit(1);
+						}
+						else{	//	Comando Erroneo
+							printf("Error comando -%s- no encontrado\n", argv[1]);
+							exit(1);
+						}
 					}
 				}
 			}
@@ -103,14 +129,18 @@ int main(int argc, char *argv[]){
 					while(!feof(arch)){
 						fscanf(arch, "%s", word);
 						cargarTrie(root, word);
+						printf("Carga de -%s- exitosa!\n", word);
+						
 					}
 					fclose(arch);
 				}
 			}
 			else{
 				for(i = 1; i < cont + 1; i++){
-					cmdCargar(arg[i]);
-					cargarTrie(root, arg[i]);
+					if(cargarTrie(root, arg[i])){
+						cmdCargar(arg[i]);
+						printf("Carga de -%s- exitosa!\n", arg[i]);
+					}
 				}
 			}
 		}
@@ -143,6 +173,14 @@ int main(int argc, char *argv[]){
 
 					else{
 
+						//	cmdExpresion
+						if((!strcmp(arg[0], "e"))){
+							expresion(root, cadena);
+							exit(1);
+						}
+
+						else{
+
 						//	cmdSalir
 						if(!strcmp(arg[0], "salir"))
 							exit(1);
@@ -150,6 +188,7 @@ int main(int argc, char *argv[]){
 
 						else	//	Comando Erroneo
 							printf("Error comando -%s- no encontrado\n", argv[1]);
+						}
 					}
 				}
 			}

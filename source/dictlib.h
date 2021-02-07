@@ -6,11 +6,12 @@
 #define CharToIndex(c) ((int)c - (int)'a')
 
 typedef struct node{
-	char item[32];
+	char item[24];
 	struct node *next;
 } Node;
 
 typedef struct TrieNode{
+	char clave[24];
 	struct TrieNode *hijos[26];
 	int hoja;
 	Node *sinonimos;
@@ -33,6 +34,9 @@ void printList(Node *listp);
 
 //  Inserta newp ordenado alfabeticamente en listp y retorna la nueva lista.
 Node *insertList(Node *listp, Node *newp);
+
+//	Busca un nombre en listp retornando 1 si lo encuentra o 0 en caso contrario.
+int lookup(Node *listp, char *key);
 
 //	Crea un nuevo elemento con el item ingresado.
 Node *new_item(char *item);
@@ -60,8 +64,9 @@ Trie *searchNode(Trie *root, const char *key);
 void addList(Trie *root, char *w1, char *w2, int modo);
 
 //	Ingresa informacion del Archivo al Trie generando las listas de Sinonimos 
-//	y Antonimos correspondientes a los prefijos.
-void cargarTrie(Trie *root, char *name);
+//	y Antonimos correspondientes a los prefijos, retorna 1 si la carga fue
+//	exitosa o 0 en caso contrario.
+int cargarTrie(Trie *root, char *name);
 
 
 /*///////////////////////////////////////////////////////*/
@@ -75,7 +80,7 @@ int cmdCargar(char *name);
 //	no encontrar la palabra.
 void cmdPalabra(Trie *root, char *key, int modo);
 
-void cmdExpresion();
+void expresion(Trie *root, char texto[]);
 
 //	Muestra los comandos disponibles.
 void cmdAyuda(void);

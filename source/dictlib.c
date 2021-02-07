@@ -52,6 +52,15 @@ Node *insertList(Node *listp, Node *newp){
     return listp;
 }
 
+int lookup(Node *listp, char *key){
+	Node *p;
+
+    for(p = listp; p != NULL; p = p->next)
+        if(!strcmp(p->item, key))
+            return 0;
+    return 1;
+}
+
 Node *new_item(char *item){
 	Node *newp;
 
@@ -92,12 +101,14 @@ void insertTrie(Trie *root, const char *key){
 
 	for (level = 0; level < length; level++){
 		index = CharToIndex(key[level]);
+		strncpy(pTrie->clave, key, level);
 		pTrie->sinonimos = NULL;
 		pTrie->antonimos = NULL;
 		if (!(pTrie->hijos[index]))
 			pTrie->hijos[index] = getNode();
 		pTrie = pTrie->hijos[index];
 	}
+	strcpy(pTrie->clave, key);
 	pTrie->hoja = 1;
 }
 
@@ -132,27 +143,31 @@ void addList(Trie *root, char *w1, char *w2, int modo){
 
     if(modo){       //  Lista de Sinonimos
         listp = searchNode(root, w1);
-        listp->sinonimos = insertList(listp->sinonimos, new_item(w2));
+		if(lookup(listp->sinonimos, w2))
+        	listp->sinonimos = insertList(listp->sinonimos, new_item(w2));
         listp = searchNode(root, w2);
-        listp->sinonimos = insertList(listp->sinonimos, new_item(w1));
+		if(lookup(listp->sinonimos, w1))
+        	listp->sinonimos = insertList(listp->sinonimos, new_item(w1));
     }
     else{           //  Lista de Antonimos
         listp = searchNode(root, w1);
-        listp->antonimos = insertList(listp->antonimos, new_item(w2));
+		if(lookup(listp->antonimos, w2))
+        	listp->antonimos = insertList(listp->antonimos, new_item(w2));
         listp = searchNode(root, w2);
-        listp->antonimos = insertList(listp->antonimos, new_item(w1));
+		if(lookup(listp->antonimos, w1))
+        	listp->antonimos = insertList(listp->antonimos, new_item(w1));
     }
 }
 
-void cargarTrie(Trie *root, char *name){
+int cargarTrie(Trie *root, char *name){
 	FILE *arch;
-    char word[32], aux[32];
+    char word[24], aux[24];
 	int modo, flag;
 
 	//	Verifica el archivo que cargara si este no existe aborta.
 	if((arch = fopen(name, "r")) == NULL){
 		fprintf(stderr, "Error: No se pudo abrir %s\n", name);
-		exit(1);
+		return 0;
 	}
 	/***********************************************************/
 	
@@ -179,6 +194,7 @@ void cargarTrie(Trie *root, char *name){
         flag = 0;
 	}
 	fclose(arch);
+	return 1;
 }
 
 /*///////////////////////////////////////////////////////*/
@@ -207,7 +223,7 @@ void cargarTrie(Trie *root, char *name){
 
 int cmdCargar(char *name){
 	FILE *arch = NULL;
-    char word[32];
+    char word[24];
 
     if((arch = fopen("loaded.txt", "r+")) == NULL){
 	    arch = fopen("loaded.txt", "w+");
@@ -243,11 +259,33 @@ void cmdPalabra(Trie *root, char *key, int modo){
 		}
 	}
 	else{
-		printf("La palabra que busca no se encuentra en la base de datos.\n");
+		printf("La palabra -%s- no se encuentra en la base de datos.\n", key);
 	}
 }
 
-void cmdExpresion();
+void expresion(Trie *root, char texto[]){
+	char cadAux[24];
+	int i, j;
+
+	for(i = 0, j = 0; (texto[i] != '\0') && (texto[i] != '\n'); i++){
+		if(texto[i] != ' '){
+            cadAux[j] = texto[i];
+			j++;
+		}
+		else{
+			cadAux[j] = '\0';
+			if(strcmp("e", cadAux)){
+				cmdPalabra(root, cadAux, 1);
+				cmdPalabra(root, cadAux, 0);
+			}
+		}
+		if((texto[i] == ' ') && (texto[i + 1] != ' '))
+			j = 0;
+	}
+	cadAux[j] = '\0';
+	cmdPalabra(root, cadAux, 1);
+	cmdPalabra(root, cadAux, 0);
+}
 
 void cmdAyuda(void){
 	printf("\nComandos Disponibles\n\n ");
@@ -255,6 +293,7 @@ void cmdAyuda(void){
 	printf("> cargar + [Nombre]   -- Asigna los archivos que deseas abrir con el modo comando o carga archivo en modo iterativo\n ");
 	printf("> liberar             -- Libera toda la informacion en la base de datos [NO IMPLEMENTADO]\n ");
 	printf("> limpiar             -- Renueva la memoria del comando cargar\n ");
+	printf("> mostrar             -- Muestra la informacion cargada en la base de datos [NO IMPLEMENTADO]\n ");
     printf("> s + [Palabra]       -- Enlista los sinonimos de la palabra ingresada\n ");
 	printf("> a + [Palabra]       -- Enlista los antonimos de la palabra ingresada\n ");
 	printf("> e + [Expresion]     -- Enlista los sinonimos y antonimos de las palabras que componen la expresion [NO IMPLEMENTADO]\n ");
