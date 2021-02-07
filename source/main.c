@@ -175,7 +175,7 @@ int main(int argc, char *argv[]){
 
 						//	cmdExpresion
 						if((!strcmp(arg[0], "e"))){
-							expresion(root, cadena);
+							cmdExpresion(root, cadena);
 							exit(1);
 						}
 
