@@ -80,7 +80,9 @@ int cmdCargar(char *name);
 //	no encontrar la palabra.
 void cmdPalabra(Trie *root, char *key, int modo);
 
-void expresion(Trie *root, char texto[]);
+//	Recibe una oracion e imprime las listas de sinonimos y antonimos de las
+//	palabras que se encuentran en el trie.
+void cmdExpresion(Trie *root, char texto[]);
 
 //	Muestra los comandos disponibles.
 void cmdAyuda(void);

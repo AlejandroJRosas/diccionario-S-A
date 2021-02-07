@@ -199,28 +199,6 @@ int cargarTrie(Trie *root, char *name){
 
 /*///////////////////////////////////////////////////////*/
 
-/*void expresion(char texto[]){
-	char cadAux[32];
-	int i, j, aux;
-
-	for(i = 0, j = 0; i < strlen(texto); i++){
-		if(texto[i] == " "){
-			for(aux = 0; j < i; j++, aux++)
-				cadAux[aux] = texto[j];
-			j = i + 1;
-			//comparar(cadAux);	//	La funcion comparar compara la palabra con el arbol Trie
-			cadAux[0] = "\0";
-		}
-		if(i == (strlen(texto) - 1)){
-			for(aux = 0; j <= i; j++, aux++)
-				cadAux[aux] = texto[j];
-			j = i + 1;
-			//comparar(cadAux);	//	^^^
-			cadAux[0];
-		}
-	}
-}//*/
-
 int cmdCargar(char *name){
 	FILE *arch = NULL;
     char word[24];
@@ -263,7 +241,7 @@ void cmdPalabra(Trie *root, char *key, int modo){
 	}
 }
 
-void expresion(Trie *root, char texto[]){
+void cmdExpresion(Trie *root, char texto[]){
 	char cadAux[24];
 	int i, j;
 
