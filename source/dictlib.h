@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <ctype.h>
 
 #define CharToIndex(c) ((int)c - (int)'a')
 
@@ -16,13 +17,19 @@ typedef struct TrieNode{
 	Node *antonimos;
 } Trie;
 
+/*					Utiles					*/
+
+//	Recibe una cadena y la devuelve con sus caracteres en minusculas.
+char *strLow(char *str);
+
+
 /*				Manejo de Cadenas			 */
 
 //	Libera todos los elementos de listp.
 void free_word(Trie *listp);
 
 //	Muestra los elementos en listp.
-void printList(Trie *listp, int modo);
+void printList(Node *listp);
 
 //  Inserta newp ordenado alfabeticamente en listp y retorna la nueva lista.
 Node *insertList(Node *listp, Node *newp);
@@ -64,7 +71,9 @@ void cargarTrie(Trie *root, char *name);
 //	Asigna el archivo a cargar al Trie para futuras ejecuciones.
 int cmdCargar(char *name);
 
-void cmdPalabra();
+//	Busca la palabra ingresada e imprime la lista pedida, si no imprime un mensaje de
+//	no encontrar la palabra.
+void cmdPalabra(Trie *root, char *key, int modo);
 
 void cmdExpresion();
 

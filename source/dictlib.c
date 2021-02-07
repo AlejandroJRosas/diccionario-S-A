@@ -1,8 +1,19 @@
 #include "dictlib.h"
 
-int flag;
+/*					Utiles					*/
 
-//*
+char *strLow(char *str){
+	int i;
+
+	for(i = 0; *(str + i); i++)
+		*(str + i) = tolower(*(str + i));
+	return str;
+}
+
+/*///////////////////////////////////////////////////////*/
+
+/*				Manejo de Cadenas			 */
+
 void free_word(Trie *listp){
 	Node *next;
 
@@ -18,24 +29,17 @@ void free_word(Trie *listp){
     listp->antonimos = NULL;
 }
 
-//*
-void printList(Trie *listp, int modo){
-	printf("--> ");
-    if(modo){
-        Node *pNode = listp->sinonimos;
-	    for(; pNode != NULL; pNode = pNode->next)
-		    printf("%s --> ", pNode->item);
-	    printf("NULL\n");
-    }
-    else{
-        Node *pNode = listp->antonimos;
-        for(; pNode != NULL; pNode = pNode->next)
-		    printf("%s --> ", pNode->item);
-	    printf("NULL\n");
-    }
+void printList(Node *listp){
+	Node *aux;
+
+    for(aux = listp; aux != NULL; aux = aux->next){
+		if(aux->next != NULL)
+        	printf("%s, ", aux->item);
+		else
+			printf("%s.\n", aux->item);
+	}
 }
 
-//*
 Node *insertList(Node *listp, Node *newp){
     Node *p, *prev = NULL;
 
@@ -48,7 +52,6 @@ Node *insertList(Node *listp, Node *newp){
     return listp;
 }
 
-//*
 Node *new_item(char *item){
 	Node *newp;
 
@@ -62,7 +65,10 @@ Node *new_item(char *item){
 	return newp;
 }
 
-//*
+/*///////////////////////////////////////////////////////*/
+
+/*					TRIE					 */
+
 Trie *getNode(void){
     Trie *pNode = NULL;
 	int i;
@@ -80,7 +86,6 @@ Trie *getNode(void){
 	return pNode;
 }
 
-//*
 void insertTrie(Trie *root, const char *key){
     Trie *pTrie = root;
 	int level, length = strlen(key), index;
@@ -96,7 +101,6 @@ void insertTrie(Trie *root, const char *key){
 	pTrie->hoja = 1;
 }
 
-//*
 int search(Trie *root, const char *key){
     Trie *pTrie = root;
 	int level, length = strlen(key), index;
@@ -110,7 +114,6 @@ int search(Trie *root, const char *key){
 	return ((pTrie != NULL) && (pTrie->hoja));
 }
 
-//*
 Trie *searchNode(Trie *root, const char *key){
     Trie *pTrie = root;
 	int level, length = strlen(key), index;
@@ -124,7 +127,6 @@ Trie *searchNode(Trie *root, const char *key){
 	return pTrie;
 }
 
-//*
 void addList(Trie *root, char *w1, char *w2, int modo){
     Trie *listp;
 
@@ -142,11 +144,10 @@ void addList(Trie *root, char *w1, char *w2, int modo){
     }
 }
 
-//*
 void cargarTrie(Trie *root, char *name){
 	FILE *arch;
     char word[32], aux[32];
-	int modo;
+	int modo, flag;
 
 	//	Verifica el archivo que cargara si este no existe aborta.
 	if((arch = fopen(name, "r")) == NULL){
@@ -167,6 +168,7 @@ void cargarTrie(Trie *root, char *name){
 				modo = 0;
 				continue;
 			}
+		strcpy(word, strLow(word));
 		insertTrie(root, word);
         if(!flag){
             strcpy(aux, word);
@@ -178,6 +180,8 @@ void cargarTrie(Trie *root, char *name){
 	}
 	fclose(arch);
 }
+
+/*///////////////////////////////////////////////////////*/
 
 /*void expresion(char texto[]){
 	char cadAux[32];
@@ -201,7 +205,6 @@ void cargarTrie(Trie *root, char *name){
 	}
 }//*/
 
-//*
 int cmdCargar(char *name){
 	FILE *arch = NULL;
     char word[32];
@@ -224,18 +227,37 @@ int cmdCargar(char *name){
     return 0;
 }
 
-void cmdPalabra();
+void cmdPalabra(Trie *root, char *key, int modo){
+	Trie *aux;
+
+	strcpy(key, strLow(key));
+	if(search(root, key)){
+		aux = searchNode(root, key);
+		if(modo){
+			printf("%s (Sinonimos): ", key);
+			printList(aux->sinonimos);
+		}
+		else{
+			printf("%s (Antonimos): ", key);
+			printList(aux->antonimos);
+		}
+	}
+	else{
+		printf("La palabra que busca no se encuentra en la base de datos.\n");
+	}
+}
 
 void cmdExpresion();
 
 void cmdAyuda(void){
-	printf("Comandos Disponibles\n\n ");
+	printf("\nComandos Disponibles\n\n ");
+	printf("> cargar              -- Carga los archivos que abririas normalmente en modo comando (Solo en Modo Iterativo)\n ");
 	printf("> cargar + [Nombre]   -- Asigna los archivos que deseas abrir con el modo comando o carga archivo en modo iterativo\n ");
+	printf("> liberar             -- Libera toda la informacion en la base de datos [NO IMPLEMENTADO]\n ");
 	printf("> limpiar             -- Renueva la memoria del comando cargar\n ");
     printf("> s + [Palabra]       -- Enlista los sinonimos de la palabra ingresada\n ");
 	printf("> a + [Palabra]       -- Enlista los antonimos de la palabra ingresada\n ");
-	printf("> e + [Expresion]     -- Enlista los sinonimos y antonimos de las palabras que componen la expresion\n ");
-	printf("> carch               -- Carga los archivos que abririas normalmente en modo comando (Solo en Modo Iterativo)\n ");
+	printf("> e + [Expresion]     -- Enlista los sinonimos y antonimos de las palabras que componen la expresion [NO IMPLEMENTADO]\n ");
     printf("> ayuda               -- Muestra los comandos disponibles\n ");
-	printf("> x                   -- Finaliza la ejecucion del programa (Solo para Modo Iterativo)\n");
+	printf("> salir               -- Finaliza la ejecucion del programa (Solo para Modo Iterativo)\n\n");
 }
