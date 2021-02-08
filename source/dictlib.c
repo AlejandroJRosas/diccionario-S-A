@@ -30,8 +30,10 @@ void free_word(Trie *listp){
 }
 
 void printList(Node *listp){
-	Node *aux;
+	Node *aux = listp;
 
+	if(!aux)
+		printf("\n");
     for(aux = listp; aux != NULL; aux = aux->next){
 		if(aux->next != NULL)
         	printf("%s, ", aux->item);
@@ -268,13 +270,44 @@ void cmdExpresion(Trie *root, char texto[]){
 void cmdAyuda(void){
 	printf("\nComandos Disponibles\n\n ");
 	printf("> cargar              -- Carga los archivos que abririas normalmente en modo comando (Solo en Modo Iterativo)\n ");
-	printf("> cargar + [Nombre]   -- Asigna los archivos que deseas abrir con el modo comando o carga archivo en modo iterativo\n ");
-	printf("> liberar             -- Libera toda la informacion en la base de datos [NO IMPLEMENTADO]\n ");
+	printf("> cargar + [Archivo]  -- Asigna los archivos que deseas abrir con el modo comando o carga archivo en modo iterativo\n ");
+	printf("> liberar             -- Libera toda la informacion en la base de datos [EN PROCESO] [Solo en Modo Iterativo]\n ");
 	printf("> limpiar             -- Renueva la memoria del comando cargar\n ");
-	printf("> mostrar             -- Muestra la informacion cargada en la base de datos [NO IMPLEMENTADO]\n ");
+	printf("> mostrar             -- Muestra la informacion cargada en la base de datos\n ");
     printf("> s + [Palabra]       -- Enlista los sinonimos de la palabra ingresada\n ");
 	printf("> a + [Palabra]       -- Enlista los antonimos de la palabra ingresada\n ");
-	printf("> e + [Expresion]     -- Enlista los sinonimos y antonimos de las palabras que componen la expresion [NO IMPLEMENTADO]\n ");
+	printf("> e + [Expresion]     -- Enlista los sinonimos y antonimos de las palabras que componen la expresion\n ");
     printf("> ayuda               -- Muestra los comandos disponibles\n ");
 	printf("> salir               -- Finaliza la ejecucion del programa (Solo para Modo Iterativo)\n\n");
+}
+
+void cmdLiberar(Trie *root){
+	Trie *pTrie = root;
+	int index;
+
+	for(index = 0; index < 26; index++) {
+		if(pTrie->hijos[index] != NULL)	
+			cmdLiberar(pTrie->hijos[index]);
+	}
+	if(pTrie->hoja)
+		free_word(pTrie);
+	free(root);
+}
+
+void cmdMostrar(Trie *root){
+	Trie *pTrie = root;
+	int index;
+
+	for(index = 0; index < 26; index++) {
+		if(pTrie->hijos[index] != NULL)	
+			cmdMostrar(pTrie->hijos[index]);
+	}
+	if(pTrie->hoja){
+		printf("%s, ", pTrie->clave);
+		conteo++;
+		if(conteo == 7){
+			printf("\n");
+			conteo = 0;
+		}
+	}
 }

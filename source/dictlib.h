@@ -18,6 +18,8 @@ typedef struct TrieNode{
 	Node *antonimos;
 } Trie;
 
+int conteo;	//	Usado para la funcion cmdMostrar
+
 /*					Utiles					*/
 
 //	Recibe una cadena y la devuelve con sus caracteres en minusculas.
@@ -75,6 +77,12 @@ int cargarTrie(Trie *root, char *name);
 
 //	Asigna el archivo a cargar al Trie para futuras ejecuciones.
 int cmdCargar(char *name);
+
+//	Borra la base de datos junto con todas sus listas asociadas.
+void cmdLiberar(Trie *root);
+
+//	Muestra las palabras cargadas en la basa de datos.
+void cmdMostrar(Trie *root);
 
 //	Busca la palabra ingresada e imprime la lista pedida, si no imprime un mensaje de
 //	no encontrar la palabra.

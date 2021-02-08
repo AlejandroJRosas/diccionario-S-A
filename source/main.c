@@ -22,6 +22,7 @@ int main(int argc, char *argv[]){
 		else{
 			if(!strcmp(argv[1], "limpiar")){	//	cmdLimpiar
 				system("rm loaded.txt");
+				printf("Archivo limpiado satisfactoriamente, puede cargar de nuevo mediante cargar + [Archivo]\n");
 				exit(1);
 			}
 			else{
@@ -33,7 +34,7 @@ int main(int argc, char *argv[]){
 					if((!(strcmp(argv[1], "s"))) || (!(strcmp(argv[1], "a")))){	//	cmdPalabra
 						if((arch = fopen("loaded.txt", "r")) == NULL){
 							printf("Es necesario asignar el archivo a cargar ");
-							printf("por medio del comando cargar + nombre\n");
+							printf("por medio del comando cargar + [Archivo]\n");
 						}
 						else{
 							while(!feof(arch)){
@@ -57,7 +58,7 @@ int main(int argc, char *argv[]){
 						if(!strcmp(argv[1], "e")){	//	cmdExpresion
 							if((arch = fopen("loaded.txt", "r")) == NULL){
 								printf("Es necesario asignar el archivo a cargar ");
-								printf("por medio del comando cargar + nombre\n");
+								printf("por medio del comando cargar + [Archivo]\n");
 							}
 							else{
 								while(!feof(arch)){
@@ -72,9 +73,29 @@ int main(int argc, char *argv[]){
 							}
 							exit(1);
 						}
-						else{	//	Comando Erroneo
-							printf("Error comando -%s- no encontrado\n", argv[1]);
-							exit(1);
+						else{	//	cmdMostrar
+							if(!strcmp(argv[1], "mostrar")){
+								if((arch = fopen("loaded.txt", "r")) == NULL){
+									printf("Es necesario asignar el archivo a cargar ");
+									printf("por medio del comando cargar + [Archivo]\n");
+								}
+								else{
+									while(!feof(arch)){
+										fscanf(arch, "%s", word);
+										cargarTrie(root, word);
+									}
+									fclose(arch);
+								}
+								printf("\nPalabras cargadas:\n");
+								conteo = 0;
+								cmdMostrar(root);
+								printf("FIN\n\n");
+								exit(1);
+							}
+							else{//	Comando Erroneo
+								printf("Error comando -%s- no encontrado\n", argv[1]);
+								exit(1);
+							}
 						}
 					}
 				}
@@ -123,7 +144,7 @@ int main(int argc, char *argv[]){
 			if(cont == 0){
 				if((arch = fopen("loaded.txt", "r")) == NULL){
 					printf("Es necesario asignar el archivo a cargar ");
-					printf("por medio del comando cargar + nombre\n");
+					printf("por medio del comando cargar + [Archivo]\n");
 				}
 				else{
 					while(!feof(arch)){
@@ -148,52 +169,76 @@ int main(int argc, char *argv[]){
 
 		else{
 
-			//	cmdLimpiar
-			if(!strcmp(arg[0], "limpiar"))
-				system("rm loaded.txt");
-			/******************************/
+			//	cmdLiberar
+			if(!strcmp(arg[0], "liberar")){
+				cmdLiberar(root);
+				root = getNode();
+			}
+			/**************************************/
 
 			else{
-				
-				//	cmdAyuda
-				if(!(strcmp(arg[0], "ayuda")))
-					cmdAyuda();
-				/*******************************/
+
+				//	cmdLimpiar
+				if(!strcmp(arg[0], "limpiar")){
+					system("rm loaded.txt");
+					printf("Archivo limpiado satisfactoriamente, puede cargar de nuevo mediante cargar + [Archivo]\n");
+				}
+				/******************************/
 
 				else{
-
-					//	cmdPalabra
-					if((!(strcmp(arg[0], "s"))) || (!(strcmp(arg[0], "a")))){
-						if(!strcmp(arg[0], "s"))
-							cmdPalabra(root, arg[1], 1);
-						else
-							cmdPalabra(root, arg[1], 0);
-					}
-					/***********************************************************/
+				
+					//	cmdAyuda
+					if(!(strcmp(arg[0], "ayuda")))
+						cmdAyuda();
+					/*******************************/
 
 					else{
 
-						//	cmdExpresion
-						if((!strcmp(arg[0], "e"))){
-							cmdExpresion(root, cadena);
-							exit(1);
+						//	cmdMostrar
+						if(!strcmp(arg[0], "mostrar")){
+							printf("\nPalabras cargadas:\n");
+							conteo = 0;
+							cmdMostrar(root);
+							printf("FIN\n\n");
 						}
+						/*******************************/
 
 						else{
 
-						//	cmdSalir
-						if(!strcmp(arg[0], "salir"))
-							exit(1);
-						/******************************/
+							//	cmdPalabra
+							if((!(strcmp(arg[0], "s"))) || (!(strcmp(arg[0], "a")))){
+								if(!strcmp(arg[0], "s"))
+									cmdPalabra(root, arg[1], 1);
+								else
+									cmdPalabra(root, arg[1], 0);
+							}
+							/***********************************************************/
 
-						else	//	Comando Erroneo
-							printf("Error comando -%s- no encontrado\n", argv[1]);
+							else{
+
+								//	cmdExpresion
+								if((!strcmp(arg[0], "e"))){
+									cmdExpresion(root, cadena);
+									exit(1);
+								}
+
+								else{
+
+									//	cmdSalir
+									if(!strcmp(arg[0], "salir"))
+										exit(1);
+									/******************************/
+
+									else	//	Comando Erroneo
+										printf("Error comando -%s- no encontrado\n", argv[1]);
+									}
+								}
+							}
 						}
 					}
 				}
+				free(cadena);
 			}
-		}
-		free(cadena);
 	}
 	return 0;
 }
