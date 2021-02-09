@@ -6,24 +6,28 @@
 #define CharToIndex(c) ((int)c - (int)'a')
 
 typedef struct node{
-	char item[24];
+	char item[16];
 	struct node *next;
 } Node;
 
 typedef struct TrieNode{
-	char clave[24];
+	char clave[16];
 	struct TrieNode *hijos[26];
 	int hoja;
 	Node *sinonimos;
 	Node *antonimos;
 } Trie;
 
-int conteo;	//	Usado para la funcion cmdMostrar
+int conteo;	//	Usado para el cmdMostrar
 
 /*					Utiles					*/
 
 //	Recibe una cadena y la devuelve con sus caracteres en minusculas.
 char *strLow(char *str);
+
+//	Abre el archivo loaded.txt y carga la informacion de los archivos
+//	que sean encontrados.
+void apertura(Trie *root, int flag);
 
 
 /*				Manejo de Cadenas			 */
@@ -54,12 +58,9 @@ Trie *getNode(void);
 //	Inserta una palabra en el Trie
 void insertTrie(Trie *root, const char *key);
 
-//	Busca una palabra en el Trie retornando 1 si la encuentra o 0 en caso contrario.
-int search(Trie *root, const char *key);
-
-//  Busca una palabra en el Trie retornando la Direccion de memoria de su nodo
-//  lista sinonimo o antonimo dependiendo del modo indicado.
-Trie *searchNode(Trie *root, const char *key);
+//	Busca una palabra en el Trie retornando 1 si la encuentra o 0 en caso contrario, si
+//	la bandera es verdadera le asigna a pHoja la direccion de la hoja.
+int search(Trie *root, const char *key, Trie **pHoja, int flag);
 
 //  Genera nodo de sinonimos o antonimos con las palabra dadas en el Trie
 //  dependiendo del modo indicado.
@@ -78,11 +79,9 @@ int cargarTrie(Trie *root, char *name);
 //	Asigna el archivo a cargar al Trie para futuras ejecuciones.
 int cmdCargar(char *name);
 
-//	Borra la base de datos junto con todas sus listas asociadas.
-void cmdLiberar(Trie *root);
-
-//	Muestra las palabras cargadas en la basa de datos.
-void cmdMostrar(Trie *root);
+//	Recorre la base de datos y , dependiendo de lo que se pida, libera o muestra
+//	lo que hay en la base de datos.
+void cmdRecorrer(Trie *root, int flag);
 
 //	Busca la palabra ingresada e imprime la lista pedida, si no imprime un mensaje de
 //	no encontrar la palabra.

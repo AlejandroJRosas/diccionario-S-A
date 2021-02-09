@@ -1,11 +1,10 @@
 #include "dictlib.h"
 
 int main(int argc, char *argv[]){
-	FILE *arch = NULL;
 	Trie *root = getNode();
 	size_t bytesLongitud;
 	ssize_t bytesLeidos;
-	char *cadena, arg[8][24], word[24];
+	char *cadena, arg[8][16];
 	int i, cont, cc;
 
 	//	Modo Comando
@@ -22,7 +21,8 @@ int main(int argc, char *argv[]){
 		else{
 			if(!strcmp(argv[1], "limpiar")){	//	cmdLimpiar
 				system("rm loaded.txt");
-				printf("Archivo limpiado satisfactoriamente, puede cargar de nuevo mediante cargar + [Archivo]\n");
+				printf("Archivo limpiado satisfactoriamente, puede cargar ");
+				printf("de nuevo por medio del comando cargar + [Archivo]\n");
 				exit(1);
 			}
 			else{
@@ -32,41 +32,19 @@ int main(int argc, char *argv[]){
 				}
 				else{	
 					if((!(strcmp(argv[1], "s"))) || (!(strcmp(argv[1], "a")))){	//	cmdPalabra
-						if((arch = fopen("loaded.txt", "r")) == NULL){
-							printf("Es necesario asignar el archivo a cargar ");
-							printf("por medio del comando cargar + [Archivo]\n");
-						}
-						else{
-							while(!feof(arch)){
-								fscanf(arch, "%s", word);
-								cargarTrie(root, word);
-							}
-							fclose(arch);
-						}
+						apertura(root, 0);
 						if(!strcmp(argv[1], "s")){
 							cmdPalabra(root, argv[2], 1);
-							search(root, argv[2]);
 							exit(1);
 						}
 						else{
 							cmdPalabra(root, argv[2], 0);
-							search(root, argv[2]);
 							exit(1);
 						}
 					}
 					else{	
 						if(!strcmp(argv[1], "e")){	//	cmdExpresion
-							if((arch = fopen("loaded.txt", "r")) == NULL){
-								printf("Es necesario asignar el archivo a cargar ");
-								printf("por medio del comando cargar + [Archivo]\n");
-							}
-							else{
-								while(!feof(arch)){
-									fscanf(arch, "%s", word);
-									cargarTrie(root, word);
-								}
-								fclose(arch);
-							}
+							apertura(root, 0);
 							for(i = 2; i < argc; i++){
 								cmdPalabra(root, argv[i], 1);
 								cmdPalabra(root, argv[i], 0);
@@ -75,20 +53,10 @@ int main(int argc, char *argv[]){
 						}
 						else{	//	cmdMostrar
 							if(!strcmp(argv[1], "mostrar")){
-								if((arch = fopen("loaded.txt", "r")) == NULL){
-									printf("Es necesario asignar el archivo a cargar ");
-									printf("por medio del comando cargar + [Archivo]\n");
-								}
-								else{
-									while(!feof(arch)){
-										fscanf(arch, "%s", word);
-										cargarTrie(root, word);
-									}
-									fclose(arch);
-								}
+								apertura(root, 0);
 								printf("\nPalabras cargadas:\n");
 								conteo = 0;
-								cmdMostrar(root);
+								cmdRecorrer(root, 0);
 								printf("FIN\n\n");
 								exit(1);
 							}
@@ -103,8 +71,8 @@ int main(int argc, char *argv[]){
 		}
 	}
 
-
 	/*///////////////////////////////////////////////////////*/
+
 
 	//	Modo Iterativo
 	cadena = NULL;
@@ -141,21 +109,8 @@ int main(int argc, char *argv[]){
 
 		//	cmdCargar
 		if(!(strcmp(arg[0], "cargar"))){
-			if(cont == 0){
-				if((arch = fopen("loaded.txt", "r")) == NULL){
-					printf("Es necesario asignar el archivo a cargar ");
-					printf("por medio del comando cargar + [Archivo]\n");
-				}
-				else{
-					while(!feof(arch)){
-						fscanf(arch, "%s", word);
-						cargarTrie(root, word);
-						printf("Carga de -%s- exitosa!\n", word);
-						
-					}
-					fclose(arch);
-				}
-			}
+			if(cont == 0)
+				apertura(root, 1);
 			else{
 				for(i = 1; i < cont + 1; i++){
 					if(cargarTrie(root, arg[i])){
@@ -171,7 +126,7 @@ int main(int argc, char *argv[]){
 
 			//	cmdLiberar
 			if(!strcmp(arg[0], "liberar")){
-				cmdLiberar(root);
+				cmdRecorrer(root, 1);
 				root = getNode();
 			}
 			/**************************************/
@@ -181,7 +136,8 @@ int main(int argc, char *argv[]){
 				//	cmdLimpiar
 				if(!strcmp(arg[0], "limpiar")){
 					system("rm loaded.txt");
-					printf("Archivo limpiado satisfactoriamente, puede cargar de nuevo mediante cargar + [Archivo]\n");
+					printf("Archivo limpiado satisfactoriamente, puede cargar ");
+					printf("de nuevo por medio del comando cargar + [Archivo]\n");
 				}
 				/******************************/
 
@@ -198,7 +154,7 @@ int main(int argc, char *argv[]){
 						if(!strcmp(arg[0], "mostrar")){
 							printf("\nPalabras cargadas:\n");
 							conteo = 0;
-							cmdMostrar(root);
+							cmdRecorrer(root, 0);
 							printf("FIN\n\n");
 						}
 						/*******************************/
