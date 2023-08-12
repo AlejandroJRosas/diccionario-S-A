@@ -1,7 +1,7 @@
 CC = gcc -Wall
 OBJECTS = source/main.o source/dictlib.o
 
-diccionario: all clean
+diccionario: all clear
 
 all: $(OBJECTS)
 	$(CC) $(OBJECTS) -o diccionario
@@ -9,6 +9,6 @@ all: $(OBJECTS)
 source/main.o:	source/dictlib.h
 source/dictlib.o: source/dictlib.h
 
-.PHONY: clean
-clean:
+.PHONY: clear
+clear:
 	rm -rf source/*.o

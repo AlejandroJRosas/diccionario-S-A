@@ -1,5 +1,7 @@
 #include "dictlib.h"
 
+int conteo;	//	Usado para el cmdMostrar
+
 /*					Utiles					*/
 
 char *strLow(char *str){

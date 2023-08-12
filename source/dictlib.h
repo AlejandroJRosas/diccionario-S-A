@@ -18,7 +18,7 @@ typedef struct TrieNode{
 	Node *antonimos;
 } Trie;
 
-int conteo;	//	Usado para el cmdMostrar
+extern int conteo;	//	Usado para el cmdMostrar
 
 /*					Utiles					*/
 
